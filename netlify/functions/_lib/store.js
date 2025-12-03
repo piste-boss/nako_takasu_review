@@ -1,6 +1,7 @@
 import { getStore } from '@netlify/blobs'
 
 const DEFAULT_STORE_NAME = 'nakotakasu-review-config'
+const memoryStore = new Map()
 
 const resolveStoreName = (name) => {
   if (name) return name
@@ -23,6 +24,19 @@ const getCredentials = () => {
   return { siteID, token }
 }
 
+const createMemoryStore = () => ({
+  async get(key) {
+    return memoryStore.has(key) ? memoryStore.get(key) : null
+  },
+  async set(key, value) {
+    memoryStore.set(key, value)
+    return { key }
+  },
+  async delete(key) {
+    memoryStore.delete(key)
+  },
+})
+
 export const createStore = (name, context) => {
   const storeName = resolveStoreName(name)
   if (context?.netlify?.blobs?.getStore) {
@@ -31,12 +45,22 @@ export const createStore = (name, context) => {
 
   const credentials = getCredentials()
   if (credentials) {
-    return getStore({
-      name: storeName,
-      ...credentials,
-    })
+    try {
+      return getStore({
+        name: storeName,
+        ...credentials,
+      })
+    } catch (error) {
+      console.warn('Blobs store initialization failed, falling back to memory store:', error?.message)
+      return createMemoryStore()
+    }
   }
-  return getStore({ name: storeName })
+  try {
+    return getStore({ name: storeName })
+  } catch (error) {
+    console.warn('Blobs store unavailable, using in-memory store:', error?.message)
+    return createMemoryStore()
+  }
 }
 
 export const getConfigStore = (context) => createStore(undefined, context)
