@@ -1,6 +1,6 @@
 import { getStore } from '@netlify/blobs'
 
-const DEFAULT_STORE_NAME = 'sakuratocafe-review-config'
+const DEFAULT_STORE_NAME = 'nakotakasu-review-config'
 
 const resolveStoreName = (name) => {
   if (name) return name
