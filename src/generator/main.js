@@ -272,3 +272,27 @@ window.addEventListener('pageshow', (event) => {
     setStatus('ページを再読み込みしました。', 'info')
   }
 })
+
+// 最新の設定を取得し、ヘッダー画像や地図リンクを更新する
+const loadConfig = async () => {
+  try {
+    const response = await fetch('/.netlify/functions/config', {
+      headers: { 'Cache-Control': 'no-cache' },
+      cache: 'no-store',
+    })
+    if (!response.ok) {
+      throw new Error('設定の取得に失敗しました。')
+    }
+    const payload = await response.json()
+    currentConfig = payload || {}
+    writeCachedConfig(currentConfig)
+    applyBrandingLogo(payload?.branding)
+    if (payload?.aiSettings) {
+      applyMapsLink(payload.aiSettings.mapsLink)
+    }
+  } catch (error) {
+    console.warn('Failed to load latest config:', error)
+  }
+}
+
+loadConfig()
