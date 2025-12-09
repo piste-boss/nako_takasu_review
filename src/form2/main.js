@@ -552,7 +552,10 @@ const applyFormContent = (formConfig = {}) => {
 
 const loadConfig = async () => {
   try {
-    const response = await fetch('/.netlify/functions/config')
+    const response = await fetch('/.netlify/functions/config', {
+      headers: { 'Cache-Control': 'no-cache' },
+      cache: 'no-store',
+    })
     if (!response.ok) {
       throw new Error('フォーム設定の取得に失敗しました。')
     }
