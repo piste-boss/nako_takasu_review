@@ -25,8 +25,17 @@ const getCredentials = () => {
 }
 
 const createMemoryStore = () => ({
-  async get(key) {
-    return memoryStore.has(key) ? memoryStore.get(key) : null
+  async get(key, options = {}) {
+    if (!memoryStore.has(key)) return null
+    const value = memoryStore.get(key)
+    if (options.type === 'json') {
+      try {
+        return JSON.parse(value)
+      } catch {
+        return null
+      }
+    }
+    return value
   },
   async set(key, value) {
     memoryStore.set(key, value)
